@@ -18,8 +18,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/url"
-	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/wavefronthq/wavefront-sdk-go/senders"
@@ -64,26 +62,15 @@ type tracesExporter struct {
 }
 
 func newTracesExporter(settings component.ExporterCreateSettings, c config.Exporter) (*tracesExporter, error) {
-	cfg, ok := c.(*Config)
-	if !ok {
-		return nil, fmt.Errorf("invalid config: %#v", c)
-	}
-
-	endpoint, err := url.Parse(cfg.Traces.Endpoint)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse traces.endpoint: %v", err)
-	}
-	tracingPort, err := strconv.Atoi(endpoint.Port())
-	if err != nil {
-		// the port is empty, otherwise url.Parse would have failed above
-		return nil, fmt.Errorf("traces.endpoint requires a port")
-	}
+	cfg := c.(*Config)
+	tracingHostName, tracingPort := cfg.tracesHostNameAndPort()
+	_, metricsPort := cfg.metricsHostNameAndPort()
 
 	// we specify a MetricsPort so the SDK can report its internal metrics
 	// but don't currently export any metrics from the pipeline
 	s, err := senders.NewProxySender(&senders.ProxyConfiguration{
-		Host:                 endpoint.Hostname(),
-		MetricsPort:          2878,
+		Host:                 tracingHostName,
+		MetricsPort:          metricsPort,
 		TracingPort:          tracingPort,
 		FlushIntervalSeconds: 1,
 		SDKMetricsTags:       map[string]string{"otel.traces.collector_version": settings.BuildInfo.Version},

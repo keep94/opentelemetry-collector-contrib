@@ -58,7 +58,7 @@ func verifyPushMetricsData(t *testing.T, errorOnSend bool) error {
 
 func createMockMetricsExporter(
 	sender *mockMetricSender) (component.MetricsExporter, error) {
-	cfg := createDefaultConfig()
+	cfg := createMetricsConfig()
 	creator := func(
 		hostName string, port int, settings component.TelemetrySettings, otelVersion string) (*metricsConsumer, error) {
 		return newMetricsConsumer(

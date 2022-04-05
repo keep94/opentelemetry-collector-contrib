@@ -17,8 +17,6 @@ package tanzuobservabilityexporter // import "github.com/open-telemetry/opentele
 import (
 	"context"
 	"fmt"
-	"net/url"
-	"strconv"
 
 	"github.com/wavefronthq/wavefront-sdk-go/senders"
 	"go.opentelemetry.io/collector/component"
@@ -58,20 +56,9 @@ type metricsConsumerCreator func(hostName string, port int, settings component.T
 	*metricsConsumer, error)
 
 func newMetricsExporter(settings component.ExporterCreateSettings, c config.Exporter, creator metricsConsumerCreator) (*metricsExporter, error) {
-	cfg, ok := c.(*Config)
-	if !ok {
-		return nil, fmt.Errorf("invalid config: %#v", c)
-	}
-	endpoint, err := url.Parse(cfg.Metrics.Endpoint)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse metrics.endpoint: %v", err)
-	}
-	metricsPort, err := strconv.Atoi(endpoint.Port())
-	if err != nil {
-		// The port is empty, otherwise url.Parse would have failed above
-		return nil, fmt.Errorf("metrics.endpoint requires a port")
-	}
-	consumer, err := creator(endpoint.Hostname(), metricsPort, settings.TelemetrySettings, settings.BuildInfo.Version)
+	cfg := c.(*Config)
+	hostName, port := cfg.metricsHostNameAndPort()
+	consumer, err := creator(hostName, port, settings.TelemetrySettings, settings.BuildInfo.Version)
 	if err != nil {
 		return nil, err
 	}

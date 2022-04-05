@@ -230,9 +230,10 @@ func TestExportTraceDataRespectsContext(t *testing.T) {
 	)})
 
 	sender := &mockSender{}
-	cfg := createDefaultConfig()
+	cfg := createTracesConfig()
+	require.NoError(t, cfg.sanitize())
 	exp := tracesExporter{
-		cfg:    cfg.(*Config),
+		cfg:    cfg,
 		sender: sender,
 		logger: zap.NewNop(),
 	}
@@ -280,9 +281,12 @@ func consumeTraces(ptrace pdata.Traces) ([]*span, error) {
 	ctx := context.Background()
 	sender := &mockSender{}
 
-	cfg := createDefaultConfig()
+	cfg := createTracesConfig()
+	if err := cfg.sanitize(); err != nil {
+		return nil, err
+	}
 	exp := tracesExporter{
-		cfg:    cfg.(*Config),
+		cfg:    cfg,
 		sender: sender,
 		logger: zap.NewNop(),
 	}
