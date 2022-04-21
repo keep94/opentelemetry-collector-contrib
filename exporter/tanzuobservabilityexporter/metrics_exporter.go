@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/wavefronthq/wavefront-sdk-go/histogram"
 	"github.com/wavefronthq/wavefront-sdk-go/senders"
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/config"
@@ -26,6 +27,35 @@ import (
 
 type metricsExporter struct {
 	consumer *metricsConsumer
+}
+
+type printSender struct {
+	S senders.Sender
+}
+
+func (p *printSender) SendMetric(name string, value float64, ts int64, source string, tags map[string]string) error {
+	fmt.Printf("ASDF sending metric: %s\n", name)
+	return p.S.SendMetric(name, value, ts, source, tags)
+}
+
+func (p *printSender) SendDeltaCounter(name string, value float64, source string, tags map[string]string) error {
+	fmt.Printf("ASDF sending metric: %s\n", name)
+	return p.S.SendDeltaCounter(name, value, source, tags)
+}
+
+func (p *printSender) SendDistribution(name string, centroids []histogram.Centroid, hgs map[histogram.Granularity]bool, ts int64, source string, tags map[string]string) error {
+	fmt.Printf("ASDF sending metric: %s\n", name)
+	return p.S.SendDistribution(name, centroids, hgs, ts, source, tags)
+}
+
+func (p *printSender) Flush() error {
+	fmt.Println("ASDF Flushing...")
+	return p.S.Flush()
+}
+
+func (p *printSender) Close() {
+	fmt.Println("ASDF Closing...")
+	p.S.Close()
 }
 
 func createMetricsConsumer(hostName string, port int, settings component.TelemetrySettings, otelVersion string) (*metricsConsumer, error) {
@@ -38,17 +68,18 @@ func createMetricsConsumer(hostName string, port int, settings component.Telemet
 	if err != nil {
 		return nil, fmt.Errorf("failed to create proxy sender: %v", err)
 	}
-	cumulative := newCumulativeHistogramDataPointConsumer(s)
-	delta := newDeltaHistogramDataPointConsumer(s)
+	ps := &printSender{S: s}
+	cumulative := newCumulativeHistogramDataPointConsumer(ps)
+	delta := newDeltaHistogramDataPointConsumer(ps)
 	return newMetricsConsumer(
 		[]typedMetricConsumer{
-			newGaugeConsumer(s, settings),
-			newSumConsumer(s, settings),
-			newHistogramConsumer(cumulative, delta, s, regularHistogram, settings),
-			newHistogramConsumer(cumulative, delta, s, exponentialHistogram, settings),
-			newSummaryConsumer(s, settings),
+			newGaugeConsumer(ps, settings),
+			newSumConsumer(ps, settings),
+			newHistogramConsumer(cumulative, delta, ps, regularHistogram, settings),
+			newHistogramConsumer(cumulative, delta, ps, exponentialHistogram, settings),
+			newSummaryConsumer(ps, settings),
 		},
-		s,
+		ps,
 		true), nil
 }
 
@@ -68,6 +99,7 @@ func newMetricsExporter(settings component.ExporterCreateSettings, c config.Expo
 }
 
 func (e *metricsExporter) pushMetricsData(ctx context.Context, md pdata.Metrics) error {
+	fmt.Println("JKL preparing to send metrics")
 	return e.consumer.Consume(ctx, md)
 }
 

@@ -148,10 +148,12 @@ func (c *metricsConsumer) pushSingleMetric(mi metricInfo, errs *[]error) {
 	dataType := mi.DataType()
 	consumer := c.consumerMap[dataType]
 	if consumer == nil {
+		fmt.Printf("JKL metric is unrecognized type: %s\n", mi.Name())
 		*errs = append(
 			*errs, fmt.Errorf("no support for metric type %v", dataType))
 
 	} else {
+		fmt.Printf("JKL metric received: %s\n", mi.Name())
 		consumer.Consume(mi, errs)
 	}
 }
