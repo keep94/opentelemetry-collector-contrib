@@ -29,22 +29,35 @@ type metricsExporter struct {
 	consumer *metricsConsumer
 }
 
+func largestKeyValuePair(tags map[string]string) string {
+	result := ""
+	for key, value := range tags {
+		if len(key)+len(value)+1 > len(result) {
+			result = fmt.Sprintf("%s=%s", key, value)
+		}
+	}
+	return result
+}
+
 type printSender struct {
 	S senders.Sender
 }
 
 func (p *printSender) SendMetric(name string, value float64, ts int64, source string, tags map[string]string) error {
-	fmt.Printf("ASDF sending metric: %s, source: '%s'\n", name, source)
+	largestTag := largestKeyValuePair(tags)
+	fmt.Printf("ASDF sending metric: %s, len: %d, largest tag: '%s'\n", name, len(largestTag), largestTag)
 	return p.S.SendMetric(name, value, ts, source, tags)
 }
 
 func (p *printSender) SendDeltaCounter(name string, value float64, source string, tags map[string]string) error {
-	fmt.Printf("ASDF sending metric: %s, source: '%s'\n", name, source)
+	largestTag := largestKeyValuePair(tags)
+	fmt.Printf("ASDF sending metric: %s, len: %d, largest tag: '%s'\n", name, len(largestTag), largestTag)
 	return p.S.SendDeltaCounter(name, value, source, tags)
 }
 
 func (p *printSender) SendDistribution(name string, centroids []histogram.Centroid, hgs map[histogram.Granularity]bool, ts int64, source string, tags map[string]string) error {
-	fmt.Printf("ASDF sending metric: %s, source: '%s'\n", name, source)
+	largestTag := largestKeyValuePair(tags)
+	fmt.Printf("ASDF sending metric: %s, len: %d, largest tag: '%s'\n", name, len(largestTag), largestTag)
 	return p.S.SendDistribution(name, centroids, hgs, ts, source, tags)
 }
 
