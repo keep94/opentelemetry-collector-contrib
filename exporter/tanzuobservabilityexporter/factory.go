@@ -102,6 +102,7 @@ func createMetricsExporter(
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("JKL ResourceAttributes = %+v\n", tobsCfg.Metrics.ResourceAttributes)
 	return resourcetotelemetry.WrapMetricsExporter(
 		tobsCfg.Metrics.ResourceAttributes,
 		exporter,
