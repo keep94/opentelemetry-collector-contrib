@@ -34,17 +34,17 @@ type printSender struct {
 }
 
 func (p *printSender) SendMetric(name string, value float64, ts int64, source string, tags map[string]string) error {
-	fmt.Printf("ASDF sending metric: %s\n", name)
+	fmt.Printf("ASDF sending metric: %s, source: '%s'\n", name, source)
 	return p.S.SendMetric(name, value, ts, source, tags)
 }
 
 func (p *printSender) SendDeltaCounter(name string, value float64, source string, tags map[string]string) error {
-	fmt.Printf("ASDF sending metric: %s\n", name)
+	fmt.Printf("ASDF sending metric: %s, source: '%s'\n", name, source)
 	return p.S.SendDeltaCounter(name, value, source, tags)
 }
 
 func (p *printSender) SendDistribution(name string, centroids []histogram.Centroid, hgs map[histogram.Granularity]bool, ts int64, source string, tags map[string]string) error {
-	fmt.Printf("ASDF sending metric: %s\n", name)
+	fmt.Printf("ASDF sending metric: %s, source: '%s'\n", name, source)
 	return p.S.SendDistribution(name, centroids, hgs, ts, source, tags)
 }
 
