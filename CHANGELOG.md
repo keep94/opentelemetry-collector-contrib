@@ -16,6 +16,7 @@
 - `prometheusreceiver`: Add `target_info` labels to resource attributes. (#11034)
 - `saphanareceiver`: Fix component memory query, add better error handling (#11507)
 - `sapmexporter`: Add config option to log responses from Splunk APM. (#11425)
+- `tanzuobservabilityexporter`: Improve alorithm to translate OTEL delta exponential histograms into tanzu observability histograms (#10860)
 
 ### 🧰 Bug fixes 🧰
 
